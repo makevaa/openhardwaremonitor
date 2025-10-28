@@ -35,6 +35,7 @@ namespace OpenHardwareMonitor.GUI {
 
     private readonly float scale;
     private float fontSize;
+    private string fontFamily;
     private int iconSize;
     private int hardwareLineHeight;
     private int sensorLineHeight;
@@ -160,6 +161,36 @@ namespace OpenHardwareMonitor.GUI {
         fontSizeMenu.MenuItems.Add(item);
       }
       contextMenu.MenuItems.Add(fontSizeMenu);
+
+       fontFamily = settings.GetValue("sensorGadget.FontFamily", "Default");
+
+      // Add font family menu to Gadget context menu
+      MenuItem fontFamilyMenu = new MenuItem("Font");
+      for (int i = 0; i < 4; i++) {
+        string name;
+        //FontFamily font;
+        switch (i) {
+          case 0: name = "Default";  break;
+          case 1: name = "Monospace"; break;
+          case 2: name = "Consolas"; break;
+          case 3: name = "VCR OSD Mono"; break;
+          default: throw new NotImplementedException();
+        }
+
+        MenuItem item = new MenuItem(name);
+        item.Checked = fontFamily == name;
+        item.Click += delegate (object sender, EventArgs e) {
+          //SetFontSize(size);
+          settings.SetValue("sensorGadget.FontFamily", name);
+          SetFontSize(settings.GetValue("sensorGadget.FontSize", 12));
+          foreach (MenuItem mi in fontFamilyMenu.MenuItems)
+            mi.Checked = mi == item;
+        };
+        fontFamilyMenu.MenuItems.Add(item);
+      }
+      contextMenu.MenuItems.Add(fontFamilyMenu);
+
+
       contextMenu.MenuItems.Add(new MenuItem("-"));
       MenuItem lockItem = new MenuItem("Lock Position and Size");
       contextMenu.MenuItems.Add(lockItem);
@@ -181,6 +212,10 @@ namespace OpenHardwareMonitor.GUI {
         };
         opacityMenu.MenuItems.Add(item);
       }
+
+ 
+
+
       this.ContextMenu = contextMenu;
 
       hardwareNames = new UserOption("sensorGadget.Hardwarenames", true,
@@ -376,10 +411,20 @@ namespace OpenHardwareMonitor.GUI {
     }
 
     private Font CreateFont(float size, FontStyle style) {
+       
+      string fontName = settings.GetValue("sensorGadget.FontFamily", "Default");
+      FontFamily fontFamily;
+
+      switch (fontName) {
+        case "Default": fontFamily = SystemFonts.MessageBoxFont.FontFamily; break;
+        case "Monospace": fontFamily = System.Drawing.FontFamily.GenericMonospace; break;
+        case "Consolas": fontFamily = new FontFamily("Consolas"); break;
+        case "VCR OSD Mono": fontFamily = new FontFamily("VCR OSD Mono"); break;
+        default: throw new NotImplementedException();
+      }
+
       try {
-        //return new Font(SystemFonts.MessageBoxFont.FontFamily, size, style);
-        //return new Font(System.Drawing.FontFamily.GenericMonospace, size, style);
-        return new Font("Consolas", size, style);
+        return new Font(fontFamily, size, style);
       } catch (ArgumentException) {
         // if the style is not supported, fall back to the original one
         return new Font(SystemFonts.MessageBoxFont.FontFamily, size, 
