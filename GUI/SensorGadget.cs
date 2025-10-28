@@ -15,6 +15,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using System.IO;
 using OpenHardwareMonitor.Hardware;
+using System.Security.Policy;
 
 namespace OpenHardwareMonitor.GUI {
   public class SensorGadget : Gadget {
@@ -130,19 +131,22 @@ namespace OpenHardwareMonitor.GUI {
 
       SetFontSize(settings.GetValue("sensorGadget.FontSize", 7.5f));
       Resize(settings.GetValue("sensorGadget.Width", Size.Width));
-      
+
       ContextMenu contextMenu = new ContextMenu();
       MenuItem hardwareNamesItem = new MenuItem("Hardware Names");
       contextMenu.MenuItems.Add(hardwareNamesItem);
       MenuItem fontSizeMenu = new MenuItem("Font Size");
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 7; i++) {
         float size;
         string name;
         switch (i) {
-          case 0: size = 6.5f; name = "Small"; break;
-          case 1: size = 7.5f; name = "Medium"; break;
-          case 2: size = 9f; name = "Large"; break;
-          case 3: size = 11f; name = "Very Large"; break;
+          case 0: size = 6.5f; name = "Small (6.5)"; break;
+          case 1: size = 7.5f; name = "Medium (7.5)"; break;
+          case 2: size = 9f; name = "Large (9)"; break;
+          case 3: size = 11f; name = "Very Large (11)"; break;
+          case 4: size = 15f; name = "Extreme 1 (15)"; break;
+          case 5: size = 20f; name = "Extreme 2 (20)"; break;
+          case 6: size = 30f; name = "Extreme 3 (30)"; break;
           default: throw new NotImplementedException();
         }
         MenuItem item = new MenuItem(name);
@@ -373,7 +377,9 @@ namespace OpenHardwareMonitor.GUI {
 
     private Font CreateFont(float size, FontStyle style) {
       try {
-        return new Font(SystemFonts.MessageBoxFont.FontFamily, size, style);
+        //return new Font(SystemFonts.MessageBoxFont.FontFamily, size, style);
+        //return new Font(System.Drawing.FontFamily.GenericMonospace, size, style);
+        return new Font("Consolas", size, style);
       } catch (ArgumentException) {
         // if the style is not supported, fall back to the original one
         return new Font(SystemFonts.MessageBoxFont.FontFamily, size, 
@@ -396,7 +402,7 @@ namespace OpenHardwareMonitor.GUI {
       bottomMargin = bottomBorder + (int)Math.Round(0.3 * scaledFontSize);
       progressWidth = (int)Math.Round(5.3 * scaledFontSize);
 
-      Resize((int)Math.Round(17.3 * scaledFontSize));
+      Resize((int)Math.Round(20 * scaledFontSize)); // Increase Gadget width from original 17.3 scaling
     }
 
     private void Resize() {
@@ -533,7 +539,7 @@ namespace OpenHardwareMonitor.GUI {
           g.DrawImage(HardwareTypeImage.Instance.GetImage(pair.Key.HardwareType),
             new Rectangle(x, y + 1, iconSize, iconSize));
           x += iconSize + 1;
-          g.DrawString(pair.Key.Name, largeFont, Brushes.White,
+          g.DrawString(pair.Key.Name, largeFont, Brushes.Lime,
             new Rectangle(x, y - 1, w - rightBorder - x, 0), 
             stringFormat);
           y += hardwareLineHeight;
